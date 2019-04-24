@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		* {
+			margin: 0;
+			padding: 0;
+		}
+		ul, ol {
+			list-style: none;
+		}
+		a {
+			text-decoration: none;
+		}
+		.carousel {
+			position: relative;
+			width: 560px;
+			height: 300px;
+			margin: 0 auto;
+			border: 4px solid red;
+			overflow: hidden;
+		}
+		/*滚动轮播图的布局关键是: 所有的图片并排在一起，并且unit的宽度要足够宽*/
+		#unit {
+			position: absolute;
+			width: 9999px;
+			height: 300px;
+			left: 0;
+			top: 0;
+		}
+		#unit li {
+			float: left;
+			width: 560px;
+			height: 300px;
+		}
+		.carousel .btns a {
+			position: absolute;
+			width: 30px;
+			height: 60px;
+			color: #fff;
+			font-size: 20px;
+			background-color: rgba(0, 0, 0, .5);
+			line-height: 60px;
+			text-align: center;
+			top: 50%;
+			margin-top: -30px;
+		}
+		.carousel .btns a:first-child {
+			left: 10px;
+		}
+		.carousel .btns a:last-child {
+			right: 10px;
+		}
+		.carousel .circles {
+			position: absolute;
+			width: 140px;
+			height: 20px;
+			left: 50%;
+			margin-left: -70px;
+			bottom: 30px;
+		}
+		.carousel .circles ol {
+			width: 150px;
+		}
+		.carousel .circles ol li {
+			float: left;
+			width: 20px;
+			height: 20px;
+			background-color: orange;
+			border-radius: 20px;
+			margin-right: 10px;
+		}
+		.carousel .circles ol li.cur {
+			background-color: #fff;
+		}
+	</style>
+</head>
+<body>
+	<!-- 最外成的容器元素 -->
+	<div class="carousel" id="carousel">
+		<ul id="unit">
+			<li><img src="images/0.jpg" alt=""></li>
+			<li><img src="images/1.jpg" alt=""></li>
+			<li><img src="images/2.jpg" alt=""></li>
+			<li><img src="images/3.jpg" alt=""></li>
+			<li><img src="images/4.jpg" alt=""></li>
+		</ul>
+		<div class="btns">
+			<a href="#" id="leftBtn">&lt;</a>
+			<a href="#" id="rightBtn">&gt;</a>
+		</div>
+		<div class="circles" id="circles">
+			<ol>
+				<li class="cur"></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+			</ol>
+		</div>
+	</div>
+	<script type="text/javascript" src="js/jquery-1.12.3.min.js"></script>
+	<script type="text/javascript">
+	// 获取元素
+	var $unit = $("#unit");
+	var $leftBtn = $("#leftBtn");
+	var $rightBtn = $("#rightBtn");
+	var $circles = $("#circles ol li");
+	var length = $circles.length;
+
+
+	// 克隆第一张图片放到unit的最后
+	$unit.children("li:first").clone().appendTo($unit);
+
+	// 定义信号量
+	var idx = 0;
+
+	// 右按钮事件
+	$rightBtn.click(function() {
+		// 防流氓
+		if ($unit.is(":animated")) {
+			// 什么也不做
+			return;
+		}
+
+		// 右按钮的点击策略: 先拉动， 再验证
+		// 改变信号量
+		idx++;
+		console.log(idx);
+
+		// 信号量的有效范围: 0, 1, 2, 3, 4, 5(猫腻图)
+		// 拉动
+		$unit.animate({"left": -560 * idx}, 1000, function() {
+			// console.log("动画完成了");
+			// 当猫腻图完全显示之后， 再去验证信号量
+			if (idx > length - 1) {
+				// 让idx变为0
+				idx = 0;
+				// 瞬间移动到真图
+				$unit.css("left", 0);
+			}
+			// console.log(idx);
+		});
+
+		// 小圆点在1000ms之内，会对应猫腻图
+		// 信号量的有效范围是0~4之间， 5对应的是猫腻图
+		// 定义中转量
+		var i = idx <= 4 ? idx : 0;
+
+		// 让对应信号量的小圆点要加上cur
+		$circles.eq(i).addClass("cur").siblings().removeClass("cur");
+	})
+
+
+	// 左按钮点击事件
+	$leftBtn.click(function() {
+		// 防流氓
+		if ($unit.is(":animated")) {
+			// 什么也不做
+			return;
+		}
+
+		// 左按钮点击策略: 先验证， 再拉动
+		// 改变信号量
+		idx--;
+		// console.log(idx);
+		// 验证信号量
+		if (idx < 0) {
+			idx = length - 1;
+			// 瞬移到猫腻图
+			$unit.css({"left": -560 * length});
+		}
+		// console.log(idx);
+
+		// 拉动
+		$unit.animate({"left": -560 * idx}, 1000);
+
+		// 对应信号量的小圆点加上cur
+		$circles.eq(idx).addClass("cur").siblings().removeClass("cur");
+	})
+
+
+	// 小圆点事件
+	$circles.mouseenter(function() {
+		// console.log($(this).index());
+		// 获取元素的序号并且该信号量
+		idx = $(this).index();
+
+		// 对应信号量的图片要滚动出现
+		$unit.stop(true).animate({"left": -560 * idx}, 1000);
+
+		// 对应信号量的小圆点加上cur
+		$(this).addClass("cur").siblings().removeClass("cur");
+
+	})
+	</script>
+</body>
+</html>
